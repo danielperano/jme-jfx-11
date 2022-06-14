@@ -85,9 +85,10 @@ public class JmeFxHostInterface implements HostInterface {
             return;
         }
 
-        var scaleFactor = container.getPixelScaleFactor();
+        var scaleFactorX = container.getPixelScaleFactorX();
+        var scaleFactorY = container.getPixelScaleFactorY();
 
-        sceneInterface.setPixelScaleFactors(scaleFactor, scaleFactor);
+        sceneInterface.setPixelScaleFactors(scaleFactorX, scaleFactorY);
 
         final int width = container.getSceneWidth();
         final int height = container.getSceneHeight();

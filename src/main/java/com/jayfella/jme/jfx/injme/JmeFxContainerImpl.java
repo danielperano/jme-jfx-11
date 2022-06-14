@@ -431,7 +431,12 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
     }
 
     @Override
-    public float getPixelScaleFactor() {
+    public float getPixelScaleFactorX() {
+        return 1.0F;
+    }
+
+    @Override
+    public float getPixelScaleFactorY() {
         return 1.0F;
     }
 

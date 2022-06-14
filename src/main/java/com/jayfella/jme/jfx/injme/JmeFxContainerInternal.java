@@ -101,11 +101,18 @@ public interface JmeFxContainerInternal extends JmeFxContainer {
     void setSceneWidth(int sceneWidth);
 
     /**
-     * Gets the target pixel factor.
+     * Gets the target pixel factor in the X dimension.
      *
      * @return the target pixel factor.
      */
-    float getPixelScaleFactor();
+    float getPixelScaleFactorX();
+
+    /**
+     * Gets the target pixel factor in the Y dimension.
+     *
+     * @return the target pixel factor.
+     */
+    float getPixelScaleFactorY();
 
     /**
      * Gets the current scene interface.
