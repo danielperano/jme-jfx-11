@@ -9,7 +9,7 @@ javafx {
     modules = [ 'javafx.controls' ]
 }
 
-group 'com.jayfella'
+group 'com.myworldvw'
 version '1.1.5'
 
 java {
@@ -44,6 +44,14 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-artifacts {
-    archives sourcesJar, javadocJar
-} 
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = project.group
+            artifactId = 'jme-jfx-11'
+            version = project.version
+
+            from components.java
+        }
+    }
+}
