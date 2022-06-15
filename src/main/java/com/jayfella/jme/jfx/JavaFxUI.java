@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.jayfella.jme.jfx.impl.JmeUpdateLoop;
 import com.jayfella.jme.jfx.impl.SceneNotifier;
 import com.jayfella.jme.jfx.injme.JmeFxContainer;
+import com.jayfella.jme.jfx.injme.JmeFxContainerImpl;
 import com.jayfella.jme.jfx.util.JfxPlatform;
 import com.jme3.app.Application;
 import com.jme3.app.SimpleApplication;
@@ -22,6 +23,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 
@@ -32,12 +34,14 @@ public class JavaFxUI {
     private static JavaFxUI INSTANCE;
 
     private Application app;
-    private JmeFxContainer container;
+    private JmeFxContainerImpl container;
 
     // the general overlay
     private Group group;
     private Scene scene;
     private AnchorPane uiscene;
+
+    Runnable removeExistingPopup = () -> {};
 
     // dialog - overlays an anchorpane to stop clicking background items and allows "darkening" too.
     private AnchorPane dialogAnchorPanel;
@@ -49,11 +53,12 @@ public class JavaFxUI {
     private int camWidth, camHeight;
 
     private JavaFxUI(Application application, String... cssStyles) {
+
         app = application;
 
         Node guiNode = ((SimpleApplication)application).getGuiNode();
-        container = JmeFxContainer.install(application, guiNode);
-
+        container = (JmeFxContainerImpl) JmeFxContainer.install(application, guiNode);
+        
         group = new Group();
         uiscene = new AnchorPane();
         uiscene.setMinWidth(app.getCamera().getWidth());
@@ -79,6 +84,14 @@ public class JavaFxUI {
         camHeight = application.getCamera().getHeight();
 
         application.getStateManager().attach(new JavaFxUpdater());
+
+        //Handling now cross input
+        //Adding input handler
+        JmeMemoryInputHandler memoryInputHandler = new JmeMemoryInputHandler();
+        app.getInputManager().addRawInputListener(memoryInputHandler);
+        //Set allowed to consume function
+        JmeFxEventConsumeAllowedFunction allowedFunction = new JmeFxEventConsumeAllowedFunction(memoryInputHandler);
+        container.getInputListener().setAllowedToConsumeInputEventFunction(allowedFunction);
     }
 
     /**
@@ -93,6 +106,20 @@ public class JavaFxUI {
 
     public static JavaFxUI getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * Set the input focus to JavaFx.
+     */
+    public void grabFocus() {
+        container.grabFocus();
+    }
+
+    /**
+     * Set the input focus to JME.
+     */
+    public void loseFocus() {
+        container.loseFocus();
     }
 
     private void refreshSceneBounds() {
@@ -124,6 +151,40 @@ public class JavaFxUI {
             uiscene.getChildren().add(node);
             recursivelyNotifyChildrenAdded(node);
         });
+    }
+
+    /**
+     * Attaches a popup onto the scene in a JME friendly way.
+     * Only one popup can be onscreen at once, adding annother will remove the old one.
+     * Clicking away from the popup will close it.
+     * @param node The content to be displayed
+     * @param x X coordinate of the top left of the popup
+     * @param y Y coordinate of the top left of the popup
+     * @return A Runnable that if called will remove the popup
+     */
+    public Runnable attachPopup(javafx.scene.Node node, double x, double y){
+        removeExistingPopup.run();
+
+        AnchorPane popupOverlay = new AnchorPane();
+        popupOverlay.setMinWidth(app.getCamera().getWidth());
+        popupOverlay.setMinHeight(app.getCamera().getHeight());
+        popupOverlay.getChildren().add(node);
+
+        node.setTranslateX(x);
+        node.setTranslateY(y);
+
+        group.getChildren().add(popupOverlay);
+
+        removeExistingPopup = () -> {
+            group.getChildren().remove(popupOverlay);
+            removeExistingPopup = () -> {};
+        };
+
+        popupOverlay.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> {
+            removeExistingPopup.run();
+        });
+
+        return removeExistingPopup;
     }
 
     /**
