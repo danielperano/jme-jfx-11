@@ -10,7 +10,7 @@ javafx {
 }
 
 group 'com.myworldvw'
-version '1.1.5'
+version '1.1.9'
 
 java {
     toolchain {

@@ -13,6 +13,7 @@ import com.jayfella.jme.jfx.injme.util.JmeWindowUtils;
 import com.jayfella.jme.jfx.lock.AsyncReadSyncWriteLock;
 import com.jayfella.jme.jfx.lock.FinalAtomicReadWriteLock;
 import com.jayfella.jme.jfx.util.JfxPlatform;
+import com.jme3.math.Vector2f;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial.CullHint;
 import com.jme3.system.JmeContext;
@@ -281,6 +282,8 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
      */
     protected volatile boolean enabled;
 
+    protected volatile Vector2f contentScale = new Vector2f(1, 1);
+
     protected JmeFxContainerImpl(final AssetManager assetManager, final Application application,
                                  final CursorDisplayProvider cursorProvider) {
         this.initFx();
@@ -432,12 +435,21 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
 
     @Override
     public float getPixelScaleFactorX() {
-        return 1.0F;
+        return contentScale.getX();
     }
 
     @Override
     public float getPixelScaleFactorY() {
-        return 1.0F;
+        return contentScale.getY();
+    }
+
+    public void setContentScale(Vector2f scale){
+        contentScale.set(scale);
+        var scene = getSceneInterface();
+        if(scene != null){
+            scene.setPixelScaleFactors(scale.getX(), scale.getY());
+            fitSceneToWindowSize();
+        }
     }
 
     /**
@@ -570,8 +582,8 @@ public class JmeFxContainerImpl implements JmeFxContainer, JmeFxContainerInterna
         lock.syncLock();
         try {
 
-            final int textureWidth = Math.max(winWidth, 64);
-            final int textureHeight = Math.max(winHeight, 64);
+            final int textureWidth = Math.max(Math.round(winWidth * getPixelScaleFactorX()), 64);
+            final int textureHeight = Math.max(Math.round(winHeight * getPixelScaleFactorY()), 64);
 
             final Picture picture = getPicture();
 

@@ -3,6 +3,7 @@ package com.jayfella.jme.jfx;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.jme3.math.Vector2f;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +107,14 @@ public class JavaFxUI {
 
     public static JavaFxUI getInstance() {
         return INSTANCE;
+    }
+
+    public Vector2f getContentScale(){
+        return new Vector2f(container.getPixelScaleFactorX(), container.getPixelScaleFactorY());
+    }
+
+    public void setContentScale(Vector2f scale){
+        container.setContentScale(scale);
     }
 
     /**
